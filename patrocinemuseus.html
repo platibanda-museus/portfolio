@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lei de Incentivo à Cultura</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Fonte Leve (custom) ── */
+@font-face {
+  font-family: 'Leve';
+  src: url('fonts/Leve-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+/* ── Reset & Base ── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Open Sans', sans-serif; background: #f3f1ec; color: #111; }
+
+/* ── Layout ── */
+.app { display: grid; grid-template-columns: 1fr 320px; height: 100vh; transition: grid-template-columns 0.3s; }
+.app.sidebar-collapsed { grid-template-columns: 1fr 0px; }
+.main { display: flex; flex-direction: column; overflow: hidden; }
+.main-scroll { flex: 1; overflow-y: auto; padding: 1.5rem; }
+
+/* ── Site Header ── */
+.site-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; background: #f3f1ec; border-bottom: 1px solid #dddad3; position: sticky; top: 0; z-index: 20; flex-wrap: wrap; gap: 10px; }
+.site-logo { height: 48px; width: auto; display: block; }
+.header-filters { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+
+/* ── Filters & Sort ── */
+.filters { display: flex; gap: 5px; flex-wrap: wrap; }
+.filter-btn { font-size: 10px; font-weight: 500; padding: 3px 11px; border-radius: 20px; border: 1px solid #ccc8bf; background: transparent; color: #777; cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; text-transform: uppercase; }
+.filter-btn.active { background: #111; color: #fff; border-color: #111; }
+.filter-btn:hover:not(.active) { border-color: #c75b9e; color: #c75b9e; }
+
+.controls-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 8px; }
+.search-input { font-family: 'Open Sans', sans-serif; font-size: 11px; padding: 5px 12px; border: 1px solid #ccc8bf; background: #fff; color: #111; outline: none; width: 200px; }
+.search-input:focus { border-color: #111; }
+.search-input::placeholder { color: #bbb; }
+.sort-row { display: flex; align-items: center; gap: 6px; }
+.sort-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #999; }
+
+/* ── Calculator ── */
+.calc-box { margin-bottom: 1.25rem; padding: 20px 22px; background: #fff; border: 1px solid #dddad3; }
+.calc-box-title { font-family: 'Leve', 'Open Sans', sans-serif; font-size: 20px; font-weight: 700; color: #111; margin-bottom: 3px; letter-spacing: -0.01em; }
+.calc-box-sub { font-size: 11px; color: #999; margin-bottom: 14px; line-height: 1.6; }
+.calc-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.calc-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: #777; white-space: nowrap; }
+.calc-input { flex: 1; min-width: 160px; font-size: 14px; padding: 8px 12px; border: 1px solid #ccc8bf; outline: none; font-family: inherit; background: #f3f1ec; color: #111; }
+.calc-input:focus { border-color: #c75b9e; background: #fff; }
+.calc-btn { font-family: 'Open Sans', sans-serif; font-size: 11px; font-weight: 600; padding: 8px 22px; border: 1.5px solid #111; background: transparent; color: #111; cursor: pointer; white-space: nowrap; transition: background 0.2s, color 0.2s, border-color 0.2s; text-transform: uppercase; letter-spacing: 0.06em; text-decoration: none; }
+.calc-btn:hover { background: #c75b9e; color: #fff; border-color: #c75b9e; text-decoration: underline; text-underline-offset: 3px; }
+.calc-result { margin-top: 14px; display: none; padding: 14px 18px; background: #f3f1ec; border-left: 3px solid #c75b9e; font-size: 13px; color: #111; line-height: 1.7; }
+.calc-result strong { font-family: Georgia, serif; font-size: 22px; font-weight: normal; display: block; margin: 4px 0; }
+.calc-obs { font-size: 10px; color: #aaa; margin-top: 10px; line-height: 1.6; }
+
+/* ── Budget Row ── */
+.budget-row { display: flex; align-items: center; gap: 14px; margin-bottom: 1.25rem; padding: 14px 20px; background: #fff; border: 1px solid #dddad3; }
+.budget-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #999; white-space: nowrap; }
+.budget-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 1px; background: #ccc8bf; outline: none; cursor: pointer; }
+.budget-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 3px; height: 18px; border-radius: 1px; background: #111; cursor: pointer; transition: background 0.15s; }
+.budget-slider::-webkit-slider-thumb:hover { background: #c75b9e; }
+.budget-slider::-moz-range-thumb { width: 3px; height: 18px; border-radius: 1px; background: #111; cursor: pointer; border: none; }
+.budget-val { font-family: 'Leve', 'Open Sans', sans-serif; font-size: 20px; font-weight: 700; color: #111; min-width: 90px; text-align: right; }
+
+/* ── Result count ── */
+.result-count { font-size: 10px; color: #aaa; letter-spacing: 0.02em; }
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-clear { position: absolute; right: 8px; background: none; border: none; color: #bbb; cursor: pointer; font-size: 13px; line-height: 1; padding: 2px; display: none; }
+.search-clear:hover { color: #111; }
+.search-wrap.has-value .search-clear { display: block; }
+.search-wrap.has-value .search-input { padding-right: 26px; }
+
+/* ── Empty state (grid) ── */
+.grid-empty { grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #aaa; font-size: 13px; line-height: 1.8; background: #fff; }
+.grid-empty i { font-size: 30px; color: #dddad3; display: block; margin-bottom: 10px; }
+.grid-empty button { margin-top: 12px; font-family: 'Open Sans', sans-serif; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 6px 16px; border: 1px solid #ccc8bf; background: #fff; color: #555; cursor: pointer; }
+.grid-empty button:hover { border-color: #c75b9e; color: #c75b9e; }
+
+/* ── Grid ── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 1px; background: #dddad3; border: 1px solid #dddad3; }
+
+/* ── Card ── */
+.card { background: #fff; overflow: hidden; position: relative; transition: background 0.15s; display: flex; flex-direction: column; }
+.card:hover { background: #faf9f6; }
+.card.selected { background: #fdf8fc; outline: 2px solid #c75b9e; outline-offset: -2px; }
+.card-img-wrap { position: relative; overflow: hidden; }
+.card-img { width: 100%; height: 148px; object-fit: cover; display: block; background: #e4e1da; transition: transform 0.4s; }
+.card:hover .card-img { transform: scale(1.04); }
+.card-img-actions { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 5px; opacity: 0; transition: opacity 0.15s; }
+.card:hover .card-img-actions { opacity: 1; }
+.img-action-btn { width: 28px; height: 28px; border-radius: 2px; background: rgba(0,0,0,0.72); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; text-decoration: none; transition: background 0.15s; }
+.img-action-btn:hover { background: rgba(0,0,0,0.92); }
+.destaque-badge { position: absolute; top: 0; left: 0; font-size: 9px; font-weight: 600; padding: 4px 10px; background: #111; color: #fff; letter-spacing: 0.04em; line-height: 1.4; }
+.check-icon { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: #c75b9e; color: #fff; display: none; align-items: center; justify-content: center; font-size: 11px; z-index: 2; box-shadow: 0 1px 4px rgba(199,91,158,0.4); }
+.card.selected .check-icon { display: flex; }
+.card-num { position: absolute; bottom: 8px; left: 10px; font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.65); letter-spacing: 0.06em; }
+
+.card-body { padding: 14px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+.card-name { font-family: 'Leve', 'Open Sans', sans-serif; font-size: 16px; font-weight: 700; color: #111; margin-bottom: 4px; line-height: 1.2; letter-spacing: 0.01em; }
+.card-city { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; margin-bottom: 10px; }
+.card-stats { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+.stat-pill { font-size: 10px; padding: 2px 7px; border: 1px solid #e8e5de; color: #777; white-space: nowrap; display: flex; align-items: center; gap: 3px; background: #f3f1ec; }
+
+.card-cotas { margin-top: 10px; }
+.cotas-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin-bottom: 6px; }
+.cotas-bar { display: flex; gap: 2px; }
+.cota-item { flex: 1; text-align: center; font-size: 9px; padding: 4px 2px; cursor: pointer; border: 1px solid #e8e5de; color: #777; transition: all 0.12s; line-height: 1.5; background: #faf9f6; min-width: 0; overflow: hidden; }
+.cota-item:hover { border-color: #c75b9e; color: #c75b9e; background: #fff; }
+.cota-item.chosen { background: #c75b9e; color: #fff; border-color: #c75b9e; }
+.cota-item.over-budget { opacity: 0.22; pointer-events: none; }
+
+.patrocinadores { margin-top: 10px; }
+.pat-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin-bottom: 5px; }
+.pat-list { display: flex; flex-wrap: wrap; gap: 3px; }
+.pat-tag { font-size: 9px; padding: 2px 6px; background: #f3f1ec; color: #777; border: 1px solid #e8e5de; }
+
+/* ── Contrapartidas ── */
+.contrapartidas-btn { margin-top: auto; width: 100%; font-family: 'Open Sans', sans-serif; font-size: 10px; font-weight: 600; padding: 7px 10px; border: 1px solid #ccc8bf; background: #fff; color: #555; cursor: pointer; text-align: left; transition: all 0.15s; display: flex; align-items: center; gap: 6px; letter-spacing: 0.03em; text-transform: uppercase; }
+/* respiro acima do botão quando empurrado pra base */
+.patrocinadores { margin-bottom: 10px; }
+.contrapartidas-btn:hover { border-color: #c75b9e; color: #c75b9e; background: #fff9fd; }
+.contrapartidas-panel { display: none; margin-top: 6px; border: 1px solid #e8e5de; overflow: hidden; font-size: 10px; }
+.contrapartidas-panel.open { display: block; }
+.cp-header { display: grid; font-size: 9px; font-weight: 600; color: #aaa; background: #f3f1ec; padding: 6px 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.cp-row { display: grid; padding: 5px 10px; border-top: 1px solid #f0ede7; align-items: center; }
+.cp-row:nth-child(even) { background: #faf9f6; }
+.cp-benefit { color: #444; font-size: 10px; line-height: 1.4; }
+.cp-check { text-align: center; color: #c75b9e; font-size: 11px; font-weight: 700; }
+.cp-num { text-align: center; color: #111; font-size: 10px; font-weight: 500; }
+.cp-empty { text-align: center; color: #dddad3; font-size: 11px; }
+
+/* ── Sidebar ── */
+.sidebar { border-left: 1px solid #dddad3; background: #eceae4; padding: 1.25rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; transition: all 0.3s; overflow-x: hidden; min-width: 0; }
+.app.sidebar-collapsed .sidebar { padding: 0; border-left: none; }
+.sidebar-title { font-size: 9px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.12em; }
+.sidebar-title-row { display: flex; align-items: center; justify-content: space-between; }
+.clear-portfolio-btn { font-family: 'Open Sans', sans-serif; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #aaa; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 2px 4px; }
+.clear-portfolio-btn:hover { color: #d94040; }
+.budget-meter { background: #fff; border: 1px solid #dddad3; padding: 14px 16px; }
+.meter-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.meter-label { font-size: 11px; color: #777; }
+.meter-val { font-family: 'Leve', 'Open Sans', sans-serif; font-size: 17px; font-weight: 700; color: #111; }
+.meter-bar { height: 2px; background: #dddad3; overflow: hidden; }
+.meter-fill { height: 100%; background: #c75b9e; transition: width 0.3s; }
+.meter-fill.over { background: #d94040; }
+.metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.metric-card { background: #fff; border: 1px solid #dddad3; padding: 10px 12px; }
+.metric-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #aaa; margin-bottom: 4px; }
+.metric-val { font-family: 'Leve', 'Open Sans', sans-serif; font-size: 20px; font-weight: 700; color: #111; }
+.metric-sub { font-size: 9px; color: #aaa; margin-top: 2px; }
+
+.portfolio-list { display: flex; flex-direction: column; gap: 4px; }
+.portfolio-empty { font-size: 12px; color: #aaa; text-align: center; padding: 1.5rem 0.5rem; line-height: 1.8; border: 1px dashed #dddad3; }
+.portfolio-empty-icon { font-size: 22px; color: #dddad3; margin-bottom: 8px; display: block; }
+.portfolio-item { background: #fff; border: 1px solid #dddad3; padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
+.portfolio-thumb { width: 32px; height: 32px; object-fit: cover; flex-shrink: 0; background: #e4e1da; }
+.portfolio-info { flex: 1; min-width: 0; }
+.portfolio-name { font-size: 11px; font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.portfolio-cota { font-size: 10px; color: #aaa; }
+.portfolio-valor { font-size: 11px; font-weight: 500; color: #111; white-space: nowrap; }
+.remove-btn { background: none; border: none; cursor: pointer; color: #ccc; font-size: 13px; padding: 2px; line-height: 1; flex-shrink: 0; }
+.remove-btn:hover { color: #d94040; }
+.divider { height: 1px; background: #dddad3; flex-shrink: 0; }
+
+/* ── Sidebar Toggle ── */
+.sidebar-toggle { position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 100; width: 20px; height: 44px; background: #f3f1ec; border: 1px solid #dddad3; border-right: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #999; font-size: 11px; transition: all 0.2s; }
+.sidebar-toggle:hover { background: #eceae4; color: #111; }
+</style>
+</head>
+<body>
+<button class="sidebar-toggle" id="sidebar-toggle" title="Recolher/expandir painel"><i class="ti ti-chevron-right" id="toggle-icon"></i></button>
+<div class="app" id="app">
+  <div class="main">
+
+    <!-- Header fixo com logo -->
+    <header class="site-header">
+      <svg class="site-logo" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <g>
+          <path d="M94.65,101.38h9.14v7.32h.16c3.86-5.99,8.98-8.58,14.96-8.58,11.81,0,19.37,10.16,19.37,23,0,14.49-9.29,23.39-20,23.39-6.85,0-11.65-3.62-14.33-7.95v23.94h-9.29v-61.11ZM116.31,137.68c7.17,0,12.29-6.06,12.29-14.33s-5.2-14.41-12.29-14.41-12.52,5.91-12.52,14.41,5.43,14.33,12.52,14.33Z" style="fill:#1d1d1b"/>
+          <path d="M151.11,82.16h9.29v63h-9.29v-63Z" style="fill:#1d1d1b"/>
+          <path d="M173.16,134.14c0-8.27,6.77-11.58,14.65-13.23,9.29-1.97,13.23-2.28,13.23-6.38,0-3.7-3.15-6.77-8.19-6.77-4.41,0-8.03,2.52-9.53,7.64l-8.74-2.99c2.68-8.9,10.55-12.29,18.74-12.29,9.92,0,17.25,4.96,17.25,15.28v16.06c0,7.25.55,10.24,1.42,13.7h-9.37c-.63-2.21-.87-4.25-.87-6.77h-.16c-2.44,4.88-7.56,8.11-13.94,8.11-7.48,0-14.49-4.02-14.49-12.36ZM190.17,139.25c6.77,0,10.95-5.98,10.95-10.87v-4.25c-2.28,1.18-5.67,2.13-9.06,2.83-3.94.87-8.66,2.6-8.66,6.85,0,3.47,2.76,5.43,6.77,5.43Z" style="fill:#1d1d1b"/>
+          <path d="M228.99,131.46v-21.66h-8.66v-8.43h8.66v-12.6h9.37v12.6h12.29v8.43h-12.29v18.43c0,4.33,0,9.76,5.99,9.76,2.05,0,4.25-.63,6.3-1.73v8.43c-2.21,1.26-5.2,1.81-8.11,1.81-13.54,0-13.54-10.4-13.54-15.04Z" style="fill:#1d1d1b"/>
+          <path d="M267.34,81.22c3.39,0,5.99,2.76,5.99,5.98,0,3.46-2.6,6.22-5.99,6.22s-6.14-2.76-6.14-6.22c0-3.23,2.6-5.98,6.14-5.98ZM262.61,101.38h9.29v43.79h-9.29v-43.79Z" style="fill:#1d1d1b"/>
+        </g>
+        <polygon points="24.32 87.32 47.52 172.11 2.29 217.82 76.2 217.82 76.2 87.32 24.32 87.32" style="fill:#c75b9e"/>
+        <g>
+          <path d="M101.16,209.99h-.11v4.87h-6.64v-45.81h6.76v19.18c2.63-4.18,6.47-6.13,10.88-6.13,8.59,0,14.09,7.39,14.09,16.78,0,10.48-6.76,16.95-14.55,16.95-4.75,0-8.48-2.46-10.42-5.84ZM110.15,209.42c5.21,0,8.93-4.41,8.93-10.42s-3.72-10.48-8.99-10.48-9.05,4.41-9.05,10.48,3.95,10.42,9.1,10.42Z" style="fill:#1d1d1b"/>
+          <path d="M132.6,206.84c0-6.01,4.93-8.42,10.65-9.62,6.76-1.43,9.62-1.66,9.62-4.64,0-2.69-2.29-4.93-5.96-4.93-3.21,0-5.84,1.83-6.93,5.56l-6.36-2.18c1.95-6.47,7.67-8.93,13.63-8.93,7.22,0,12.54,3.61,12.54,11.11v11.68c0,5.27.4,7.45,1.03,9.96h-6.82c-.46-1.6-.63-3.09-.63-4.92h-.11c-1.78,3.55-5.5,5.9-10.14,5.9-5.44,0-10.54-2.92-10.54-8.99ZM144.97,210.56c4.92,0,7.96-4.35,7.96-7.9v-3.09c-1.66.86-4.12,1.55-6.59,2.06-2.86.63-6.3,1.89-6.3,4.98,0,2.52,2,3.95,4.92,3.95Z" style="fill:#1d1d1b"/>
+          <path d="M170.23,183.02h6.64v5.1h.12c2.41-4.18,6.24-6.01,10.31-6.01,5.78,0,11.28,3.72,11.28,12.71v20.04h-6.81v-17.07c0-5.27-1.95-9.28-6.81-9.28-4.58,0-7.96,3.55-7.96,9.51v16.84h-6.76v-31.84Z" style="fill:#1d1d1b"/>
+          <path d="M206.88,198.94c0-10.42,6.47-16.84,14.49-16.84,4.75,0,8.3,2.35,10.31,5.73h.12v-18.78h6.81v35.85c0,5.33.4,7.45,1.03,9.96h-6.76c-.46-1.89-.69-3.32-.63-4.75h-.12c-2.4,3.95-6.53,5.73-10.71,5.73-8.82,0-14.55-7.1-14.55-16.89ZM222.86,209.36c5.21,0,9.11-4.35,9.11-10.48s-4.01-10.37-9.11-10.37-8.93,4.35-8.93,10.42,3.67,10.42,8.93,10.42Z" style="fill:#1d1d1b"/>
+          <path d="M247.25,206.84c0-6.01,4.92-8.42,10.65-9.62,6.76-1.43,9.62-1.66,9.62-4.64,0-2.69-2.29-4.93-5.96-4.93-3.21,0-5.84,1.83-6.93,5.56l-6.36-2.18c1.95-6.47,7.67-8.93,13.63-8.93,7.21,0,12.54,3.61,12.54,11.11v11.68c0,5.27.4,7.45,1.03,9.96h-6.82c-.46-1.6-.63-3.09-.63-4.92h-.11c-1.78,3.55-5.5,5.9-10.14,5.9-5.44,0-10.54-2.92-10.54-8.99ZM259.62,210.56c4.92,0,7.96-4.35,7.96-7.9v-3.09c-1.66.86-4.12,1.55-6.59,2.06-2.86.63-6.3,1.89-6.3,4.98,0,2.52,2,3.95,4.92,3.95Z" style="fill:#1d1d1b"/>
+        </g>
+      </svg>
+      <div class="header-filters">
+        <div class="filters" id="filters">
+          <button class="filter-btn active" data-filter="todos">Todos</button>
+          <button class="filter-btn" data-filter="Arte">Arte</button>
+          <button class="filter-btn" data-filter="História">História</button>
+          <button class="filter-btn" data-filter="Ciência">Ciência</button>
+        </div>
+        <div class="filters" id="filters-regiao">
+          <button class="filter-btn active" data-regiao="todas">Todas regiões</button>
+          <button class="filter-btn" data-regiao="Norte">Norte</button>
+          <button class="filter-btn" data-regiao="Nordeste">Nordeste</button>
+          <button class="filter-btn" data-regiao="Sudeste">Sudeste</button>
+          <button class="filter-btn" data-regiao="Sul">Sul</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Conteúdo principal rolável -->
+    <div class="main-scroll">
+      <div class="calc-box">
+        <div class="calc-box-title">Patrocine Museus Brasileiros</div>
+        <div class="calc-box-sub">Informe o valor do Imposto de Renda a recolher para calcular quanto pode destinar via Lei de Incentivo à Cultura</div>
+        <div class="calc-row">
+          <span class="calc-label">IR a recolher (IRPJ)</span>
+          <input class="calc-input" id="calc-input" type="text" placeholder="Ex: 500.000,00" inputmode="decimal">
+          <button class="calc-btn" onclick="calcularRouanet()">Calcular</button>
+        </div>
+        <div class="calc-obs">Obs.: Empresas que irão apurar prejuízo não possuem Imposto de Renda a recolher.</div>
+        <div class="calc-result" id="calc-result"></div>
+      </div>
+      <div class="budget-row">
+        <span class="budget-label">Budget</span>
+        <input type="range" class="budget-slider" id="budget-slider" min="0" max="30000000" step="50000" value="3700000">
+        <span class="budget-val" id="budget-display">R$ 3,7M</span>
+      </div>
+      <div class="controls-bar">
+        <div class="sort-row">
+          <span class="sort-label">Ordenar por</span>
+          <button class="filter-btn active" data-sort="publico">Público</button>
+          <button class="filter-btn" data-sort="seguidores">Seguidores</button>
+          <button class="filter-btn" data-sort="nome">Nome</button>
+          <span class="result-count" id="result-count"></span>
+        </div>
+        <div class="search-wrap" id="search-wrap">
+          <input class="search-input" id="search-input" type="text" placeholder="Buscar museu…">
+          <button class="search-clear" id="search-clear" title="Limpar busca"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div style="height:2rem"></div>
+    </div><!-- /main-scroll -->
+  </div>
+
+  <div class="sidebar">
+    <div class="sidebar-title">Portfolio</div>
+    <div class="budget-meter">
+      <div class="meter-row">
+        <span class="meter-label">Utilizado</span>
+        <span class="meter-val" id="meter-used">R$ 0</span>
+      </div>
+      <div class="meter-bar"><div class="meter-fill" id="meter-fill" style="width:0%"></div></div>
+      <div class="meter-row" style="margin-top:6px;margin-bottom:0">
+        <span class="meter-label">Disponível</span>
+        <span class="meter-val" id="meter-remaining">R$ 3,7M</span>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label">Público anual</div>
+        <div class="metric-val" id="m-publico">—</div>
+        <div class="metric-sub">visitantes/ano</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Custo por pessoa</div>
+        <div class="metric-val" id="m-cpp">—</div>
+        <div class="metric-sub">por visitante</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Seguidores</div>
+        <div class="metric-val" id="m-seg">—</div>
+        <div class="metric-sub">alcance digital</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Museus</div>
+        <div class="metric-val" id="m-count">0</div>
+        <div class="metric-sub">no portfolio</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="sidebar-title-row">
+      <span class="sidebar-title">Selecionados</span>
+      <button class="clear-portfolio-btn" id="clear-portfolio" title="Limpar portfolio"><i class="ti ti-trash" style="font-size:11px"></i> Limpar</button>
+    </div>
+    <div class="portfolio-list" id="portfolio-list">
+      <div class="portfolio-empty">Selecione museus e cotas<br>para montar seu portfolio</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MUSEUS = [
+  { nome:"Pinacoteca", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:820000, segmento:"Arte", site:"https://pinacoteca.org.br", imagem:"https://images.adsttc.com/media/images/5740/c9ac/e58e/cee2/f800/006f/large_jpg/pmrpi_03.jpg?1463863714", seguidores:590000, video:"https://www.youtube.com/watch?v=u14Ebh3T4YI", patrocinadores:["Bradesco","Vivo","InfinitePay","Livelo","Itaú Asset","JP Morgan","B3"], destaque:"Museu de arte mais antigo de SP", cotas:{bronze:100000,prata:200000,ouro:450000,master:1000000,apresenta:1600000} },
+  { nome:"MASP | Museu de Arte de São Paulo", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:1190000, segmento:"Arte", site:"https://masp.org.br", imagem:"https://www.mpd.com.br/app/assets/images/upload/blogImage/big/167/masp-cultura-e-hist-oria-no-primeiro-museu-moderno-do-brasil-26112024033958.jpg", seguidores:1000000, video:"https://www.youtube.com/watch?v=_SveikOHzCI", patrocinadores:["Nubank","Itaú","McKinsey","B3","Basf","Vivo","IBM"], destaque:"Cartão Postal de SP na Avenida Paulista", cotas:{bronze:200000,prata:400000,ouro:500000,master:1500000,apresenta:3000000} },
+  { nome:"MON | Museu Oscar Niemeyer", cidade:"Curitiba", estado:"PR", regiao:"Sul", publico:720000, segmento:"Arte", site:"https://museuoscarniemeyer.org.br", imagem:"https://irp.cdn-website.com/4a2f40c4/dms3rep/multi/MON-capa.jpg", seguidores:138000, video:"https://www.youtube.com/watch?v=bHNeoyxZo7o", patrocinadores:["Vivo","Sanepar","Copel","Anaconda","Junto Seguros"], destaque:"Principal Ponto Turístico do Paraná", cotas:{bronze:50000,prata:100000,ouro:500000,master:1000000,apresenta:3000000} },
+  { nome:"Inhotim", cidade:"Brumadinho", estado:"MG", regiao:"Sudeste", publico:358000, segmento:"Arte", site:"https://inhotim.org.br", imagem:"https://upload.wikimedia.org/wikipedia/commons/5/5b/Instituto_Cultural_Inhotim_Pavillion.jpg", seguidores:545000, video:"https://www.youtube.com/watch?v=-kPlRTywQp0", patrocinadores:["Vale","Nubank","Itaú","Shell","B3"], destaque:"Maior museu a céu aberto do mundo", cotas:{bronze:100000,prata:300000,ouro:700000,master:1500000,apresenta:10000000} },
+  { nome:"Museu do Amanhã", cidade:"Rio de Janeiro", estado:"RJ", regiao:"Sudeste", publico:1200000, segmento:"Ciência", site:"https://museudoamanha.org.br", imagem:"https://donaarquiteta.com.br/wp-content/uploads/2020/05/museu-do-amanha-destacada.jpg", seguidores:444000, video:"https://www.youtube.com/watch?v=0TSpB-dO2F8", patrocinadores:["Vale","IBM","Shell","Santander","B3","Heineken"], destaque:"Ícone da Sustentabilidade e do Futuro", cotas:{bronze:300000,prata:500000,ouro:1000000,master:2000000,apresenta:5000000} },
+  { nome:"MAR | Museu de Arte do Rio", cidade:"Rio de Janeiro", estado:"RJ", regiao:"Sudeste", publico:580000, segmento:"Arte", site:"https://museudeartedorio.org.br", imagem:"https://upload.wikimedia.org/wikipedia/commons/4/46/Praça_Mauá_11_2015_Rio_708.JPG", seguidores:309000, video:"https://www.youtube.com/watch?v=tBlMhMOH2tM", patrocinadores:["Vale","Equinor","Globo","Bradesco","Itaú"], destaque:"Símbolo da Revitalização do Porto Maravilha", cotas:{bronze:100000,prata:250000,ouro:500000,master:1000000,apresenta:4000000} },
+  { nome:"Museu Catavento", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:8000000, segmento:"Ciência", site:"https://cataventocultural.org.br", imagem:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Museu_Catavento_Cultural_e_Educacional.jpg/1280px-Museu_Catavento_Cultural_e_Educacional.jpg", seguidores:255000, video:"https://www.youtube.com/watch?v=jnTiSxjs8vc", patrocinadores:["Shell","Sabesp","Toyota","IBM","CPFL"], destaque:"Museu de Ciências e Diversão", cotas:{bronze:200000,prata:500000,ouro:1000000,master:2000000,apresenta:3000000} },
+  { nome:"Museu do Ipiranga", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:2000000, segmento:"História", site:"https://museudoipiranga.org.br", imagem:"https://www.funaripaisagismo.com.br/wp-content/uploads/2022/01/shutterstock_258294953-min.jpg", seguidores:330000, video:"https://www.youtube.com/watch?v=TLkmmNMUf2Y", patrocinadores:["Shell","Sabesp","Bradesco","Itaú","PwC"], destaque:"Marco da Proclamação da Independência", cotas:{bronze:100000,prata:300000,ouro:1000000,master:2000000,apresenta:2500000} },
+  { nome:"MIS | Museu da Imagem e do Som", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:417000, segmento:"História", site:"https://mis-sp.org.br", imagem:"https://mis-sp.org.br/wp-content/uploads/2023/08/linha-do-tempo_2020-50-anos.jpg", seguidores:415000, video:"https://www.youtube.com/watch?v=vnEZFUWp4OA", patrocinadores:["Livelo","Vivo","Goldman Sachs","PwC","Unisys"], destaque:"Referência em Cultura Audiovisual", cotas:{bronze:100000,prata:250000,ouro:500000,master:1000000,apresenta:1500000} },
+  { nome:"Museu do Futebol", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:415000, segmento:"História", site:"https://museudofutebol.org.br", imagem:"https://visite.museus.gov.br/wp-content/uploads/tainacan-items/14/272820/Museu_20240722_159.jpg", seguidores:97900, video:"https://www.youtube.com/watch?v=ToPdqM4eWkE", patrocinadores:["Shell","Sabesp","Toyota","IBM"], destaque:"Paixão Nacional no Estádio do Pacaembu", cotas:{bronze:200000,prata:500000,ouro:1000000,master:2000000,apresenta:3000000} },
+  { nome:"Museu da Língua Portuguesa", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:382496, segmento:"História", site:"https://museudalinguaportuguesa.org.br", imagem:"https://cdn.prod.website-files.com/63d3c43a87589374d0a09844/650490b3c070fc1efe89d26a_exposicao-de-longa-duracao%20-%20-Credito-Ciete-Silverio-6-menor.jpg", seguidores:195000, video:"https://www.youtube.com/watch?v=nprKidFDNd0", patrocinadores:["Petrobras","Vale","Itaú","Auren Energia","Machado Meyer"], destaque:"Experiência Imersiva na Estação da Luz", cotas:{bronze:50000,prata:150000,ouro:400000,master:1000000,apresenta:2000000} },
+  { nome:"Fundação Iberê Camargo", cidade:"Porto Alegre", estado:"RS", regiao:"Sul", publico:370000, segmento:"Arte", site:"https://iberecamargo.org.br", imagem:"https://upload.wikimedia.org/wikipedia/commons/3/3b/FundacaoIbereCamargo_%28cropped%29.jpg", seguidores:53900, video:"https://www.youtube.com/watch?v=rfhlzcJg-I4", patrocinadores:["BTG Pactual","Redecard","Itaú","CMPC","Gerdau"], destaque:"Arquitetura Única & acervo do principal artista gaúcho", cotas:{bronze:50000,prata:100000,ouro:250000,master:500000,apresenta:1500000} },
+  { nome:"MAM-SP | Museu de Arte Moderna", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:318175, segmento:"Arte", site:"https://mam.org.br", imagem:"https://files.ocula.com/ri/e9/e9b1e09b-2547-4385-9aa9-3d26784716d2/1511/850/museu-de-arte-moderna-de-sao-paulo-mam.jpg", seguidores:301000, video:"https://www.youtube.com/watch?v=-YfsDPVvkYE", patrocinadores:["Itaú","Bradesco","Shell","Unilever","Vivo","B3"], destaque:"Museu do Parque Ibirapuera", cotas:{bronze:99000,prata:200000,ouro:400000,master:800000,apresenta:800000} },
+  { nome:"MAM RJ | Museu de Arte Moderna", cidade:"Rio de Janeiro", estado:"RJ", regiao:"Sudeste", publico:300000, segmento:"Arte", site:"https://mamrio.org.br", imagem:"https://www.mamrio.com.br/imagenes-artigos/mam-rio.jpeg", seguidores:171000, video:"https://www.youtube.com/watch?v=l4kf0z4AXXk", patrocinadores:["Petrobras","Vale","Itaú BBA","IRB Brasil","Mattos Filho"], destaque:"Joia do Modernismo no Aterro do Flamengo", cotas:{bronze:150000,prata:300000,ouro:800000,master:1500000,apresenta:2000000} },
+  { nome:"MARGS | Museu de Arte do RS", cidade:"Porto Alegre", estado:"RS", regiao:"Sul", publico:258918, segmento:"Arte", site:"https://margs.rs.gov.br", imagem:"https://margs.rs.gov.br/wp-content/uploads/2025/08/MG_6488-scaled.jpg", seguidores:309000, video:"https://www.youtube.com/watch?v=VShE53sJQA0", patrocinadores:["Banrisul","BRDE","Engie","CMPC"], destaque:"Principal Polo de Arte do Rio Grande do Sul", cotas:{bronze:100000,prata:200000,ouro:400000,master:800000,apresenta:1200000} },
+  { nome:"Museu Nacional de Belas Artes", cidade:"Rio de Janeiro", estado:"RJ", regiao:"Sudeste", publico:250000, segmento:"Arte", site:"https://mnba.gov.br", imagem:"https://blog.assist.org.br/wp-content/uploads/2025/01/MuseuNacionalBelasArtes.jpg", seguidores:95100, video:"https://www.youtube.com/watch?v=yKCs_Al8wd0", patrocinadores:["Itaú Distribuidora","Itaú Seguros","Itaú Vida"], destaque:"Maior Coleção de Arte do Século XIX", cotas:{bronze:99000,prata:200000,ouro:400000,master:800000,apresenta:800000} },
+  { nome:"Museu Histórico Nacional", cidade:"Rio de Janeiro", estado:"RJ", regiao:"Sudeste", publico:200000, segmento:"História", site:"https://museuhistoriconacional.com.br", imagem:"https://images.trvl-media.com/place/502466/fcce9f56-2738-487f-bad7-37c9a815fe5c.jpg", seguidores:138000, video:"https://www.youtube.com/watch?v=jaFjkqKXDmU", patrocinadores:["Vale"], destaque:"Memória e Identidade Brasileira", cotas:{bronze:99000,prata:200000,ouro:500000,master:800000,apresenta:1500000} },
+  { nome:"Museu Afro Brasil", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:180000, segmento:"História", site:"https://museuafrobrasil.org.br", imagem:"https://images.squarespace-cdn.com/content/v1/625e0a7f20bb3a13976a8f50/1655948131965-1BMTDC4SXAY83FTW9NAK/museu-afrobrasil-parque-do-ibirapuera.jpeg", seguidores:170000, video:"https://www.youtube.com/watch?v=6zrl-mM4Qj4", patrocinadores:["Instituto Vale","Goldman Sachs","Vivo","JP Morgan","Telefônica"], destaque:"Maior Acervo da Diáspora Africana no Mundo", cotas:{bronze:150000,prata:250000,ouro:400000,master:800000,apresenta:1000000} },
+  { nome:"Museu das Favelas", cidade:"São Paulo", estado:"SP", regiao:"Sudeste", publico:130000, segmento:"História", site:"https://museudafavela.org.br", imagem:"https://viagemeturismo.abril.com.br/wp-content/uploads/2024/08/museu_das_favelas_15_0.jpg?quality=70&strip=info&w=1280&h=720&crop=1", seguidores:136000, video:"https://www.youtube.com/watch?v=3ruUfRRNopo", patrocinadores:["Facebook","MercadoPago","Ernst & Young","EDP"], destaque:"Referência da Cultura de Periferia", cotas:{bronze:100000,prata:200000,ouro:400000,master:625000,apresenta:4805000} },
+  { nome:"MUSA | Museu da Amazônia", cidade:"Manaus", estado:"AM", regiao:"Norte", publico:100000, segmento:"Ciência", site:"https://musa.am.gov.br", imagem:"https://museudaamazonia.org.br/wp-content/uploads/2023/07/bg-miolo-cabecalho-quem-somos.jpg", seguidores:94300, video:"https://www.youtube.com/watch?v=K0FbQHaq4zg", patrocinadores:["Bemol"], destaque:"Museu-Floresta com Torre de Observação", cotas:{bronze:50000,prata:100000,ouro:200000,master:300000,apresenta:700000} },
+  { nome:"Museu Nacional", cidade:"Rio de Janeiro", estado:"RJ", regiao:"Sudeste", publico:63000, segmento:"Ciência", site:"https://museunacional.ufrj.br", imagem:"https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Museu_Nacional_UFRJ.jpg/1280px-Museu_Nacional_UFRJ.jpg", seguidores:142000, video:"https://www.youtube.com/watch?v=hC5VkLMpoK8", patrocinadores:["BNDESPAR","Vale","Bradesco"], destaque:"Instituição Científica mais Antiga do Brasil", cotas:{bronze:100000,prata:250000,ouro:500000,master:1000000,apresenta:2500000} },
+  { nome:"Museu de Congonhas", cidade:"Congonhas", estado:"MG", regiao:"Sudeste", publico:50000, segmento:"Arte", site:"https://museudecongonhas.com.br", imagem:"https://visite.museus.gov.br/wp-content/uploads/2024/09/cropped-IMG-20240905-WA0024.jpg", seguidores:11100, video:"https://globoplay.globo.com/v/4762661/", patrocinadores:["Vale"], destaque:"Patrimônio Mundial da Humanidade (UNESCO)", cotas:{bronze:null,prata:null,ouro:500000,master:1000000,apresenta:1500000} },
+  { nome:"Paço do Frevo", cidade:"Recife", estado:"PE", regiao:"Nordeste", publico:120000, segmento:"História", site:"https://pacodofrevo.org.br", imagem:"https://pacodofrevo.org.br/wp-content/uploads/2021/10/31b564_4ed123c3960d44ce89a2e9722fb9dfbf_mv2.jpg", seguidores:91000, video:"https://www.youtube.com/watch?v=WDIFPYP6_Lk", patrocinadores:["Vale","Globo","FMC Technologies","Redecard","Itaú"], destaque:"Capital Mundial do Frevo — Patrimônio da Humanidade", cotas:{bronze:100000,prata:300000,ouro:500000,master:1000000,apresenta:2000000} },
+  { nome:"Instituto Ricardo Brennand", cidade:"Recife", estado:"PE", regiao:"Nordeste", publico:177000, segmento:"Arte", site:"https://www.institutoricardobrennand.org.br", imagem:"https://www.institutoricardobrennand.org.br/public/uploads/2017/02/16/capela-1.jpg", seguidores:180000, video:"https://www.youtube.com/watch?v=OB9D0MdFmiw", patrocinadores:["Stellantis","BTG Pactual","Bradesco","JP Morgan","Grant Thornton"], destaque:"Maior Acervo de Tapeçaria da América Latina", cotas:{bronze:50000,prata:150000,ouro:300000,master:900000,apresenta:1500000} },
+  { nome:"MUNCAB | Museu da Cultura Afro-Brasileira", cidade:"Salvador", estado:"BA", regiao:"Nordeste", publico:200000, segmento:"História", site:"https://museuafrobrasileiro.com.br", imagem:"https://museuafrobrasileiro.com.br/wp-content/uploads/2025/04/1C2A9564-scaled.jpg", seguidores:77600, video:"https://www.youtube.com/watch?v=HVc4k9k3HXA", patrocinadores:["Petrobras"], destaque:"Museu Nacional da Cultura Afro-Brasileira", cotas:{bronze:100000,prata:400000,ouro:800000,master:1200000,apresenta:2000000} },
+  { nome:"Museu Histórico do Vale do Itajaí Mirim", cidade:"Brusque", estado:"SC", regiao:"Sul", publico:5000, segmento:"História", site:"https://casadebrusque.org.br", imagem:"https://adm.casadebrusque.org.br/uploads/galerias/17/dts-1447-1754507230.jpg", seguidores:4750, video:"https://www.youtube.com/watch?v=rxPOywhYs44&t=48s", patrocinadores:["Havan","Irmãos Fischer","Metalúrgica Siemsen"], destaque:"Memória da Colonização Europeia em Santa Catarina", cotas:{bronze:10000,prata:30000,ouro:100000,master:200000,apresenta:500000} },
+  { nome:"Museu da Cultura Cearense", cidade:"Fortaleza", estado:"CE", regiao:"Nordeste", publico:265000, segmento:"História", site:"https://www.idm.org.br", imagem:"https://www.ce.gov.br/wp-content/uploads/2024/07/20240321144722__S1A2712-scaled.jpg", seguidores:29000, video:"https://www.youtube.com/watch?v=JbdeDa-WMs8", patrocinadores:["Petrobras","Fraport Brasil"], destaque:"Cultura e Arte no Coração de Fortaleza", cotas:{bronze:100000,prata:250000,ouro:500000,master:1000000,apresenta:2000000} },
+  { nome:"Museu Câmara Cascudo", cidade:"Natal", estado:"RN", regiao:"Nordeste", publico:18700, segmento:"Ciência", site:"https://www.mcc.ufrn.br", imagem:"https://mcc.ufrn.br/img/cards/educativo.jpg", seguidores:19100, video:"https://www.youtube.com/watch?v=4_neaFX0Do0", patrocinadores:[], destaque:"Maior Acervo Antropológico do Nordeste", cotas:{bronze:50000,prata:100000,ouro:250000,master:500000,apresenta:1000000} },
+];
+
+// Contrapartidas genéricas por nível de cota
+// Estrutura: { beneficio, bronze, prata, ouro, master, apresenta }
+// valor: true = check, número = quantidade, false/null = vazio
+const CONTRAPARTIDAS = [
+  { b:"Marca em folders impressos ou digitais",        bronze:true,  prata:true,  ouro:true,  master:true,  apresenta:true },
+  { b:"Marca em convites virtuais",                    bronze:true,  prata:true,  ouro:true,  master:true,  apresenta:true },
+  { b:"Marca em e-mail marketing do museu",            bronze:true,  prata:true,  ouro:true,  master:true,  apresenta:false },
+  { b:"Menção em releases para imprensa",              bronze:false, prata:false, ouro:false, master:true,  apresenta:true },
+  { b:"Marca em ficha técnica dos espaços expositivos",bronze:false, prata:true,  ouro:true,  master:true,  apresenta:true },
+  { b:"Marca em painel externo e interno do museu",    bronze:true,  prata:true,  ouro:true,  master:true,  apresenta:true },
+  { b:"Diárias no auditório do museu",                 bronze:false, prata:false, ouro:1,     master:3,     apresenta:9 },
+  { b:"Diárias no salão de eventos do museu",          bronze:false, prata:false, ouro:1,     master:2,     apresenta:3 },
+  { b:"Ingressos de cortesia",                         bronze:25,    prata:75,    ouro:150,   master:400,   apresenta:1200 },
+  { b:"Visitas mediadas para convidados",              bronze:false, prata:false, ouro:1,     master:3,     apresenta:10 },
+  { b:"Catálogos das exposições",                      bronze:1,     prata:2,     ouro:4,     master:6,     apresenta:15 },
+  { b:"Programa Sou Patrono / Patrono Preferencial",   bronze:false, prata:false, ouro:true,  master:true,  apresenta:true },
+  { b:"Dia semanal gratuito no museu (oferta)",        bronze:false, prata:false, ouro:false, master:false, apresenta:true },
+];
+
+const COTA_KEYS  = ['bronze','prata','ouro','master','apresenta'];
+const COTA_LABELS = ['Bronze','Prata','Ouro','Master','Apresenta'];
+
+const PRESETS = {
+  nacional: [
+    {nome:"Inhotim", cota:"bronze"},
+    {nome:"MON | Museu Oscar Niemeyer", cota:"bronze"},
+    {nome:"MUSA | Museu da Amazônia", cota:"bronze"},
+    {nome:"MARGS | Museu de Arte do RS", cota:"bronze"},
+    {nome:"MAM RJ | Museu de Arte Moderna", cota:"bronze"},
+    {nome:"MAM-SP | Museu de Arte Moderna", cota:"bronze"},
+    {nome:"Pinacoteca", cota:"bronze"},
+    {nome:"Museu do Ipiranga", cota:"bronze"},
+    {nome:"Museu de Congonhas", cota:"ouro"},
+    {nome:"MAR | Museu de Arte do Rio", cota:"bronze"},
+    {nome:"Museu Nacional", cota:"bronze"},
+  ],
+  impacto: [
+    {nome:"Museu Catavento", cota:"prata"},
+    {nome:"Museu do Futebol", cota:"prata"},
+    {nome:"Museu do Amanhã", cota:"prata"},
+    {nome:"MASP", cota:"prata"},
+    {nome:"MIS | Museu da Imagem e do Som", cota:"prata"},
+    {nome:"Museu da Língua Portuguesa", cota:"prata"},
+  ],
+  esg: [
+    {nome:"Museu Afro Brasil", cota:"prata"},
+    {nome:"Museu das Favelas", cota:"prata"},
+    {nome:"Fundação Iberê Camargo", cota:"prata"},
+    {nome:"Museu Histórico Nacional", cota:"prata"},
+    {nome:"MON | Museu Oscar Niemeyer", cota:"ouro"},
+  ],
+};
+
+let budget = 3700000;
+let portfolio = {};
+let activeFilter = "todos";
+let activeRegiao = "todas";
+let activeSort = "publico";
+let searchQuery = "";
+
+function fmtR(n) {
+  if (n >= 1000000) return 'R$ '+(n/1000000).toFixed(1).replace('.0','')+'M';
+  if (n >= 1000) return 'R$ '+Math.round(n/1000)+'k';
+  return 'R$ '+n;
+}
+function fmtN(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1).replace('.0','')+'M';
+  if (n >= 1000) return Math.round(n/1000)+'k';
+  return String(n);
+}
+function fmtCPP(gasto, pub) {
+  if (!gasto || !pub) return '—';
+  const v = gasto / pub;
+  if (v >= 1) return 'R$ ' + v.toFixed(2).replace('.',',');
+  if (v >= 0.01) return 'R$ ' + v.toFixed(2).replace('.',',');
+  // centésimos de centavo
+  return 'R$ ' + v.toFixed(4).replace('.',',');
+}
+function fmtBudget(n) {
+  if (n >= 1000000) return 'R$ '+(n/1000000).toFixed(1).replace('.0','')+'M';
+  if (n >= 1000) return 'R$ '+Math.round(n/1000)+'k';
+  if (n === 0) return 'R$ 0';
+  return 'R$ '+n;
+}
+
+function totalGasto() { return Object.values(portfolio).reduce((s,p)=>s+p.valor,0); }
+
+function updateMeter() {
+  const gasto = totalGasto();
+  const pct = budget > 0 ? Math.min(100, gasto/budget*100) : 0;
+  const fill = document.getElementById('meter-fill');
+  fill.style.width = pct+'%';
+  fill.classList.toggle('over', gasto > budget);
+  document.getElementById('meter-used').textContent = fmtR(gasto);
+  document.getElementById('meter-remaining').textContent = fmtR(Math.max(0, budget-gasto));
+}
+
+function updateMetrics() {
+  const items = Object.values(portfolio);
+  document.getElementById('m-count').textContent = items.length;
+  if (!items.length) {
+    ['m-publico','m-cpp','m-seg'].forEach(id => document.getElementById(id).textContent = '—');
+    return;
+  }
+  const totalPub = items.reduce((s,p)=>s+p.publico,0);
+  const totalSeg = items.reduce((s,p)=>s+p.seguidores,0);
+  const gasto = totalGasto();
+  document.getElementById('m-publico').textContent = fmtN(totalPub);
+  document.getElementById('m-seg').textContent = fmtN(totalSeg);
+  document.getElementById('m-cpp').textContent = fmtCPP(gasto, totalPub);
+}
+
+function updatePortfolioList() {
+  const list = document.getElementById('portfolio-list');
+  const items = Object.values(portfolio);
+  if (!items.length) { list.innerHTML = '<div class="portfolio-empty"><i class="ti ti-building-museum portfolio-empty-icon"></i>Selecione um museu<br>e escolha uma cota<br>para montar seu portfolio</div>'; return; }
+  list.innerHTML = items.map(p => `
+    <div class="portfolio-item">
+      <img class="portfolio-thumb" src="${p.imagem}" alt="${p.nome}" onerror="this.style.display='none'">
+      <div class="portfolio-info">
+        <div class="portfolio-name">${p.nome}</div>
+        <div class="portfolio-cota">Cota ${p.cota.charAt(0).toUpperCase()+p.cota.slice(1)}</div>
+      </div>
+      <div class="portfolio-valor">${fmtR(p.valor)}</div>
+      <button class="remove-btn" onclick="removeMuseu('${p.nome.replace(/'/g,"\\'")}')"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+}
+
+function removeMuseu(nome) {
+  delete portfolio[nome];
+  renderCards(); updateMeter(); updateMetrics(); updatePortfolioList();
+}
+
+function toggleCota(nome, cota, valor) {
+  const gasto = totalGasto();
+  const atual = portfolio[nome];
+  if (atual && atual.cota === cota) { delete portfolio[nome]; }
+  else {
+    const valorAnterior = atual ? atual.valor : 0;
+    if ((gasto - valorAnterior + valor) > budget * 2) return;
+    const m = MUSEUS.find(x => x.nome === nome);
+    portfolio[nome] = { nome, cota, valor, imagem: m.imagem, publico: m.publico, seguidores: m.seguidores };
+  }
+  renderCards(); updateMeter(); updateMetrics(); updatePortfolioList();
+}
+
+function buildContrapartidas(museu, cotaAtual) {
+  const cols = COTA_KEYS.filter(k => museu.cotas[k] !== null && museu.cotas[k] !== undefined);
+
+  // Ícone + cor por cota
+  const COTA_ICONS = {
+    bronze:   { icon: 'ti-medal-2',  color: '#b87333', label: 'Bronze' },
+    prata:    { icon: 'ti-medal',    color: '#8a9bb0', label: 'Prata' },
+    ouro:     { icon: 'ti-medal',    color: '#c9a84c', label: 'Ouro' },
+    master:   { icon: 'ti-crown',    color: '#7c5cbf', label: 'Master' },
+    apresenta:{ icon: 'ti-star',     color: '#c75b9e', label: 'Apresenta' },
+  };
+
+  const gridCols = `grid-template-columns: 1fr ${cols.map(()=>'26px').join(' ')}`;
+
+  const headerCols = cols.map(k => {
+    const ci = COTA_ICONS[k];
+    return `<span title="${ci.label}" style="text-align:center;display:flex;align-items:center;justify-content:center"><i class="ti ${ci.icon}" style="font-size:13px;color:${ci.color}"></i></span>`;
+  }).join('');
+
+  const rows = CONTRAPARTIDAS.map(c => {
+    const cells = cols.map(k => {
+      const v = c[k];
+      const ci = COTA_ICONS[k];
+      if (v === false || v === null || v === undefined) return `<span class="cp-empty" style="text-align:center;display:block">—</span>`;
+      if (v === true) return `<span class="cp-check" style="color:${ci.color}">✓</span>`;
+      return `<span class="cp-num">${v}</span>`;
+    }).join('');
+    return `<div class="cp-row" style="${gridCols}"><span class="cp-benefit">${c.b}</span>${cells}</div>`;
+  }).join('');
+
+  return `
+    <div class="cp-header" style="${gridCols}">
+      <span style="font-size:9px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Contrapartida</span>${headerCols}
+    </div>
+    ${rows}`;
+}
+
+function toggleContrapartidas(nome) {
+  const panel = document.getElementById('cp-'+nome.replace(/\s/g,'_'));
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+
+function renderCards() {
+  const grid = document.getElementById('grid');
+  const gasto = totalGasto();
+  let museus = [...MUSEUS];
+  if (activeFilter !== 'todos') museus = museus.filter(m => m.segmento.trim() === activeFilter);
+  if (activeRegiao !== 'todas') museus = museus.filter(m => m.regiao === activeRegiao);
+  if (searchQuery) museus = museus.filter(m => m.nome.toLowerCase().includes(searchQuery) || m.cidade.toLowerCase().includes(searchQuery));
+  if (activeSort === 'publico') museus.sort((a,b) => b.publico - a.publico);
+  else if (activeSort === 'seguidores') museus.sort((a,b) => b.seguidores - a.seguidores);
+  else museus.sort((a,b) => a.nome.localeCompare(b.nome));
+
+  const rc = document.getElementById('result-count');
+  if (rc) rc.textContent = museus.length ? `· ${museus.length} ${museus.length === 1 ? 'museu' : 'museus'}` : '';
+
+  if (!museus.length) {
+    grid.innerHTML = `<div class="grid-empty"><i class="ti ti-mood-empty"></i>Nenhum museu encontrado com esses filtros.<br><button onclick="resetFilters()">Limpar filtros</button></div>`;
+    return;
+  }
+
+  grid.innerHTML = museus.map((m, idx) => {
+    const sel = portfolio[m.nome];
+    const cotaAtual = sel ? sel.cota : null;
+    const valorAnterior = sel ? sel.valor : 0;
+    const uid = m.nome.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+    const num = String(idx+1).padStart(2,'0');
+
+    const COTA_COLORS = {bronze:'#b87333',prata:'#8a9bb0',ouro:'#c9a84c',master:'#7c5cbf',apresenta:'#c75b9e'};
+    const COTA_ICONS2 = {bronze:'ti-medal-2',prata:'ti-medal',ouro:'ti-medal',master:'ti-crown',apresenta:'ti-star'};
+    const cotasHTML = COTA_KEYS.map((c,i) => {
+      const val = m.cotas[c];
+      if (val === null || val === undefined) return '';
+      const isChosen = cotaAtual === c;
+      const novoGasto = gasto - valorAnterior + val;
+      const isOver = !isChosen && novoGasto > budget * 2;
+      const cor = COTA_COLORS[c];
+      const chosenStyle = isChosen ? `background:${cor};color:#fff;border-color:${cor};` : `border-top:2px solid ${cor};`;
+      return `<div class="cota-item${isChosen?' chosen':''}${isOver?' over-budget':''}"
+        style="${chosenStyle}"
+        onclick="event.stopPropagation();toggleCota('${m.nome.replace(/'/g,"\\'")}','${c}',${val})"
+        title="${COTA_LABELS[i]}: ${fmtR(val)}">
+        <div title="${COTA_LABELS[i]}" style="display:flex;align-items:center;justify-content:center"><i class="ti ${COTA_ICONS2[c]}" style="font-size:11px"></i></div>
+        <div style="font-weight:600;white-space:nowrap;font-size:9px">${fmtR(val)}</div>
+      </div>`;
+    }).join('');
+
+    const pats = m.patrocinadores.slice(0,4).map(p=>`<span class="pat-tag">${p}</span>`).join('');
+    const badge = '';
+    const ytId = m.video ? m.video.replace(/.*(?:youtu\.be\/|v=|v\/|embed\/)([^&?#]+).*/,'$1') : null;
+    const ytThumb = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : m.imagem;
+
+    return `<div class="card${sel?' selected':''}">
+      <div class="check-icon"><i class="ti ti-check"></i></div>
+      <div class="card-img-wrap">
+        <img class="card-img" src="${m.imagem}" alt="${m.nome}" loading="lazy" onerror="this.src='${ytThumb}'">
+        ${badge}
+        <span class="card-num">${num}</span>
+        <div class="card-img-actions">
+          ${m.video ? `<a class="img-action-btn" href="${m.video}" target="_blank" title="Ver vídeo"><i class="ti ti-player-play"></i></a>` : ''}
+          ${m.site ? `<a class="img-action-btn" href="${m.site}" target="_blank" title="Visitar site"><i class="ti ti-external-link"></i></a>` : ''}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${m.nome}</div>
+        <div class="card-city">${m.cidade}, ${m.estado}</div>
+        <div class="card-stats">
+          <span class="stat-pill"><i class="ti ti-users" style="font-size:10px"></i>${fmtN(m.publico)}/ano</span>
+          <span class="stat-pill"><i class="ti ti-brand-instagram" style="font-size:10px"></i>${fmtN(m.seguidores)}</span>
+          <span class="stat-pill">${m.segmento.trim()}</span>
+        </div>
+        <div class="card-cotas">
+          <div class="cotas-label">Cotas de patrocínio</div>
+          <div class="cotas-bar">${cotasHTML}</div>
+        </div>
+        <div class="patrocinadores">
+          <div class="pat-label">Patrocinadores atuais</div>
+          <div class="pat-list">${pats}</div>
+        </div>
+        <button class="contrapartidas-btn" onclick="toggleContrapartidas('${uid}')">
+          <i class="ti ti-gift" style="font-size:11px"></i> Ver contrapartidas
+        </button>
+        <div class="contrapartidas-panel" id="cp-${uid}">
+          ${buildContrapartidas(m, cotaAtual)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateSliderFill(slider) {
+  const pct = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+  slider.style.background = `linear-gradient(to right, #111 0%, #111 ${pct}%, #ccc8bf ${pct}%, #ccc8bf 100%)`;
+}
+const sliderEl = document.getElementById('budget-slider');
+updateSliderFill(sliderEl);
+sliderEl.addEventListener('input', e => {
+  budget = parseInt(e.target.value);
+  document.getElementById('budget-display').textContent = fmtBudget(budget);
+  updateSliderFill(e.target);
+  updateMeter(); updateMetrics(); renderCards();
+});
+
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('[data-filter]');
+  if (!btn) return;
+  activeFilter = btn.dataset.filter;
+  document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === activeFilter));
+  renderCards();
+});
+
+const searchInput = document.getElementById('search-input');
+const searchWrap = document.getElementById('search-wrap');
+searchInput.addEventListener('input', e => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  searchWrap.classList.toggle('has-value', e.target.value.length > 0);
+  renderCards();
+});
+document.getElementById('search-clear').addEventListener('click', () => {
+  searchInput.value = '';
+  searchQuery = '';
+  searchWrap.classList.remove('has-value');
+  searchInput.focus();
+  renderCards();
+});
+
+// Reseta filtros, região e busca (usado pelo empty state)
+function resetFilters() {
+  activeFilter = 'todos'; activeRegiao = 'todas'; searchQuery = '';
+  searchInput.value = ''; searchWrap.classList.remove('has-value');
+  document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === 'todos'));
+  document.querySelectorAll('[data-regiao]').forEach(b => b.classList.toggle('active', b.dataset.regiao === 'todas'));
+  renderCards();
+}
+
+// Limpar portfolio inteiro
+document.getElementById('clear-portfolio').addEventListener('click', () => {
+  if (!Object.keys(portfolio).length) return;
+  portfolio = {};
+  renderCards(); updateMeter(); updateMetrics(); updatePortfolioList();
+});
+
+document.getElementById('filters-regiao').addEventListener('click', e => {
+  const btn = e.target.closest('[data-regiao]');
+  if (!btn) return;
+  activeRegiao = btn.dataset.regiao;
+  document.querySelectorAll('[data-regiao]').forEach(b => b.classList.toggle('active', b.dataset.regiao === activeRegiao));
+  renderCards();
+});
+
+document.querySelectorAll('[data-sort]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    activeSort = btn.dataset.sort;
+    document.querySelectorAll('[data-sort]').forEach(b => b.classList.toggle('active', b.dataset.sort === activeSort));
+    renderCards();
+  });
+});
+
+renderCards(); updateMeter(); updateMetrics(); updatePortfolioList();
+
+function calcularRouanet() {
+  const raw = document.getElementById('calc-input').value.replace(/\./g,'').replace(',','').replace(/(\d{2})$/,'.$1');
+  const v = parseFloat(raw);
+  const result = document.getElementById('calc-result');
+  if (!v || v <= 0) { result.style.display='block'; result.innerHTML='<span style="color:#E24B4A">Informe um valor válido.</span>'; return; }
+  const rouanet = v * 0.04;
+  result.style.display = 'block';
+  result.innerHTML = `Você pode destinar via Lei de Incentivo à Cultura:<br><strong>${fmtR(rouanet)}</strong><br><span style="font-size:11px;color:#888">(4% de ${fmtR(v)} de IRPJ devido)</span>`;
+  // Atualiza o budget
+  const slider = document.getElementById('budget-slider');
+  budget = Math.min(rouanet, parseInt(slider.max));
+  slider.value = budget;
+  document.getElementById('budget-display').textContent = fmtBudget(budget);
+  updateMeter(); updateMetrics(); renderCards();
+}
+document.getElementById('calc-input').addEventListener('keydown', e => { if (e.key === 'Enter') calcularRouanet(); });
+
+// Formatação automática do input (milhar e centavos)
+document.getElementById('calc-input').addEventListener('input', function() {
+  let val = this.value.replace(/\D/g,'');
+  if (!val) { this.value = ''; return; }
+  val = (parseInt(val) / 100).toFixed(2);
+  this.value = parseFloat(val).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+});
+
+// Sidebar toggle
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  const app = document.getElementById('app');
+  const icon = document.getElementById('toggle-icon');
+  const collapsed = app.classList.toggle('sidebar-collapsed');
+  icon.className = collapsed ? 'ti ti-chevron-left' : 'ti ti-chevron-right';
+});
+</script>
+</body>
+</html>
